@@ -1,0 +1,412 @@
+/*
+Copyright (c) 2012-2018.
+
+Juergen Key. Alle Rechte vorbehalten.
+
+Weiterverbreitung und Verwendung in nichtkompilierter oder kompilierter Form,
+mit oder ohne Veraenderung, sind unter den folgenden Bedingungen zulaessig:
+
+   1. Weiterverbreitete nichtkompilierte Exemplare muessen das obige Copyright,
+die Liste der Bedingungen und den folgenden Haftungsausschluss im Quelltext
+enthalten.
+   2. Weiterverbreitete kompilierte Exemplare muessen das obige Copyright,
+die Liste der Bedingungen und den folgenden Haftungsausschluss in der
+Dokumentation und/oder anderen Materialien, die mit dem Exemplar verbreitet
+werden, enthalten.
+   3. Weder der Name des Autors noch die Namen der Beitragsleistenden
+duerfen zum Kennzeichnen oder Bewerben von Produkten, die von dieser Software
+abgeleitet wurden, ohne spezielle vorherige schriftliche Genehmigung verwendet
+werden.
+
+DIESE SOFTWARE WIRD VOM AUTOR UND DEN BEITRAGSLEISTENDEN OHNE
+JEGLICHE SPEZIELLE ODER IMPLIZIERTE GARANTIEN ZUR VERFUEGUNG GESTELLT, DIE
+UNTER ANDEREM EINSCHLIESSEN: DIE IMPLIZIERTE GARANTIE DER VERWENDBARKEIT DER
+SOFTWARE FUER EINEN BESTIMMTEN ZWECK. AUF KEINEN FALL IST DER AUTOR
+ODER DIE BEITRAGSLEISTENDEN FUER IRGENDWELCHE DIREKTEN, INDIREKTEN,
+ZUFAELLIGEN, SPEZIELLEN, BEISPIELHAFTEN ODER FOLGENDEN SCHAEDEN (UNTER ANDEREM
+VERSCHAFFEN VON ERSATZGUETERN ODER -DIENSTLEISTUNGEN; EINSCHRAENKUNG DER
+NUTZUNGSFAEHIGKEIT; VERLUST VON NUTZUNGSFAEHIGKEIT; DATEN; PROFIT ODER
+GESCHAEFTSUNTERBRECHUNG), WIE AUCH IMMER VERURSACHT UND UNTER WELCHER
+VERPFLICHTUNG AUCH IMMER, OB IN VERTRAG, STRIKTER VERPFLICHTUNG ODER
+UNERLAUBTE HANDLUNG (INKLUSIVE FAHRLAESSIGKEIT) VERANTWORTLICH, AUF WELCHEM
+WEG SIE AUCH IMMER DURCH DIE BENUTZUNG DIESER SOFTWARE ENTSTANDEN SIND, SOGAR,
+WENN SIE AUF DIE MOEGLICHKEIT EINES SOLCHEN SCHADENS HINGEWIESEN WORDEN SIND.
+*/
+package ${packageName};
+
+import java.beans.BeanDescriptor;
+import java.beans.MethodDescriptor;
+import java.beans.ParameterDescriptor;
+import java.beans.EventSetDescriptor;
+import java.beans.PropertyDescriptor;
+import java.beans.IntrospectionException;
+import java.lang.reflect.Method;
+
+#set($String='')##
+#set($Calendar=$String.class.forName('java.util.Calendar'))##
+#set($Date=${Calendar.getInstance().getTime()})##
+#set($SimpleDateFormat=$String.class.forName('java.text.SimpleDateFormat'))##
+#set($cons=${SimpleDateFormat.getConstructor($String.class)})##
+#set($current_time=${cons.newInstance("yyyy-MM-dd'T'HH:mm:ss.S'Z'").format($Date)})##
+@javax.annotation.Generated(value="${generatorname}", date="$current_time")
+public class ${className}BeanInfo
+    extends java.beans.SimpleBeanInfo {
+#if(${beanDescriptorI18nBundle})
+	private final static java.util.ResourceBundle i18n=java.util.ResourceBundle.getBundle(${beanDescriptorI18nBundle},java.util.Locale.getDefault());
+#end
+    /*lazy BeanDescriptor*/
+    private static BeanDescriptor getBdescriptor(){
+        BeanDescriptor beanDescriptor = new BeanDescriptor  ( ${packageName}.${className}.class , null );
+#if(${beanDescriptorHidden})
+        beanDescriptor.setHidden(${beanDescriptorHidden});
+#end
+#if(${beanDescriptorExpert})
+        beanDescriptor.setExpert(${beanDescriptorExpert});
+#end
+#if(${beanDescriptorPreferred})
+        beanDescriptor.setPreferred(${beanDescriptorPreferred});
+#end
+#if(${beanDescriptorDescription})
+        beanDescriptor.setShortDescription(${beanDescriptorDescription});
+#else
+        beanDescriptor.setShortDescription(null);
+#end
+#if(${beanDescriptorDisplayName})
+        beanDescriptor.setShortDescription(${beanDescriptorDisplayName});
+#else
+        beanDescriptor.setDisplayName(null);
+#end
+## #if(${beanDescriptorModuleWidgetDefaultLayerTitle})
+##         beanDescriptor.setValue(de.netsysit.dataflowframework.ui.ModuleWidget.DEFAULTLAYERTITLE,${beanDescriptorModuleWidgetDefaultLayerTitle});
+## #end
+#foreach ( $key in ${beanDescriptorValueMap.keySet()} )
+        beanDescriptor.setValue($key,${beanDescriptorValueMap.get($key)});
+#end
+        return beanDescriptor;
+     }
+
+    // Property array
+    /*lazy PropertyDescriptor*/
+    private static PropertyDescriptor[] getPdescriptor(){
+        java.util.Map<String,PropertyDescriptor> properties = new java.util.HashMap();
+
+        try {
+#foreach($property in ${properties.keySet()})
+            properties.put("${property}",new PropertyDescriptor ( "${property}", #if (${properties.get(${property}).get("declaringClass")}) ${properties.get(${property}).get("declaringClass")}.class #else ${packageName}.${className}.class #end, #if (${properties.get(${property}).get("readMethod")}) "${properties.get(${property}).get("readMethod")}" #else null #end, #if (${properties.get(${property}).get("writeMethod")})"${properties.get(${property}).get("writeMethod")}" #else null #end ));
+#if(${properties.get(${property}).get("Hidden")})
+            properties.get("${property}").setHidden(${properties.get(${property}).get("Hidden")});
+#end
+#if(${properties.get(${property}).get("Expert")})
+            properties.get("${property}").setExpert(${properties.get(${property}).get("Expert")});
+#end
+#if(${properties.get(${property}).get("Preferred")})
+            properties.get("${property}").setPreferred(${properties.get(${property}).get("Preferred")});
+#end
+#if(${properties.get(${property}).get("Description")})
+            properties.get("${property}").setShortDescription(${properties.get(${property}).get("Description")});
+#else
+            properties.get("${property}").setShortDescription(null);
+#end
+#if(${properties.get(${property}).get("DisplayName")})
+            properties.get("${property}").setShortDescription(${properties.get(${property}).get("DisplayName")});
+#else
+            properties.get("${property}").setDisplayName(null);
+#end
+#foreach ( $key in ${properties.get(${property}).get("ValueMap").keySet()} )
+            properties.get("${property}").setValue($key,${properties.get(${property}).get("ValueMap").get($key)});
+#end
+#if(${properties.get(${property}).get("Bound")})
+            properties.get("${property}").setBound(${properties.get(${property}).get("Bound")});
+#end
+#if(${properties.get(${property}).get("Constrained")})
+            properties.get("${property}").setConstrained(${properties.get(${property}).get("Constrained")});
+#end
+#if(${properties.get(${property}).get("PropertyEditorClass")})
+            properties.get("${property}").setPropertyEditorClass(${properties.get(${property}).get("PropertyEditorClass")}.class);
+#end
+#end
+
+        }
+        catch(Exception e) {
+#if(${beanDescriptorExceptionHandling})
+	        ${beanDescriptorExceptionHandling}
+#else
+            e.printStackTrace();
+#end
+        }
+
+        return new java.util.LinkedList<PropertyDescriptor>(properties.values()).toArray(new PropertyDescriptor[0]);
+        }
+
+    // EventSet array
+    /*lazy EventSetDescriptor*/
+    private static EventSetDescriptor[] getEdescriptor(){
+        java.util.Map<String,EventSetDescriptor> eventSets = new java.util.HashMap();
+
+        try {
+#foreach($event in ${eventSets.keySet()})
+            eventSets.put("${eventSets.get(${event}).get("listener")}",new EventSetDescriptor ( #if (${eventSets.get(${event}).get("declaringClass")}) ${eventSets.get(${event}).get("declaringClass")}.class #else ${packageName}.${className}.class #end, "${eventSets.get(${event}).get("listener")}", ${eventSets.get(${event}).get("type")}.class, new String[] {"${event}"}, #if (${eventSets.get(${event}).get("addMethod")})"${eventSets.get(${event}).get("addMethod")}" #else null #end, #if (${eventSets.get(${event}).get("removeMethod")})"${eventSets.get(${event}).get("removeMethod")}" #else null #end ));
+            eventSets.get("${eventSets.get(${event}).get("listener")}").setInDefaultEventSet(${eventSets.get(${event}).get("InDefaultEventSet")});
+            eventSets.get("${eventSets.get(${event}).get("listener")}").setUnicast(${eventSets.get(${event}).get("Unicast")});
+#end
+        }
+        catch(Exception e) {
+#if(${beanDescriptorExceptionHandling})
+	        ${beanDescriptorExceptionHandling}
+#else
+            e.printStackTrace();
+#end
+        }
+        return new java.util.LinkedList<EventSetDescriptor>(eventSets.values()).toArray(new EventSetDescriptor[0]);
+         }
+
+    // Method array
+    /*lazy MethodDescriptor*/
+    private static MethodDescriptor[] getMdescriptor(){
+        java.util.Map<String,MethodDescriptor> methods = new java.util.HashMap();
+
+        try {
+#foreach($method in ${methods.keySet()})
+            methods.put("${method}",new MethodDescriptor(${methods.get("$method").get("fqClassName")}.class.getMethod("${method}", new Class[] {
+            #set( $commaneeded = false )
+            #foreach($param in ${methods.get("$method").get("params")})
+	#if($commaneeded==true)
+		,
+	#else
+		#set($commaneeded = true)
+	#end
+                ${param.asType().toString()}.class
+            #end
+            })));
+#if(${methods.get("$method").get("contextContent").get("Hidden")})
+        methods.get("${method}").setHidden(${methods.get("$method").get("contextContent").get("Hidden")});
+#end
+#if(${methods.get("$method").get("contextContent").get("Expert")})
+        methods.get("${method}").setExpert(${methods.get("$method").get("contextContent").get("Expert")});
+#end
+#if(${methods.get("$method").get("contextContent").get("Preferred")})
+        methods.get("${method}").setPreferred(${methods.get("$method").get("contextContent").get("Preferred")});
+#end
+#if(${methods.get("$method").get("contextContent").get("Description")})
+        methods.get("${method}").setShortDescription(${methods.get("$method").get("contextContent").get("Description")});
+#else
+        methods.get("${method}").setShortDescription(null);
+#end
+#if(${methods.get("$method").get("contextContent").get("DisplayName")})
+        methods.get("${method}").setShortDescription(${methods.get("$method").get("contextContent").get("DisplayName")});
+#else
+        methods.get("${method}").setDisplayName(null);
+#end
+#foreach ( $key in ${methods.get("$method").get("contextContent").get("ValueMap").keySet()} )
+        methods.get("${method}").setValue($key,${methods.get("$method").get("contextContent").get("ValueMap").get($key)});
+#end
+#end
+        }
+        catch( Exception e)
+        {
+#if(${beanDescriptorExceptionHandling})
+	        ${beanDescriptorExceptionHandling}
+#else
+            e.printStackTrace();
+#end
+        }
+
+        return new java.util.LinkedList<MethodDescriptor>(methods.values()).toArray(new MethodDescriptor[0]);
+        }
+
+    private static java.awt.Image iconColor16 = null;
+    private static java.awt.Image iconColor32 = null;
+    private static java.awt.Image iconMono16 = null;
+    private static java.awt.Image iconMono32 = null;
+
+    private static final int defaultPropertyIndex = ${beanDescriptorDefaultPropertyIndex};
+    private static final int defaultEventIndex = ${beanDescriptorDefaultEventIndex};
+
+// Here you can add code for customizing the Superclass BeanInfo.
+
+
+    /**
+     * Gets the bean's <code>BeanDescriptor</code>s.
+     *
+     * @return BeanDescriptor describing the editable
+     * properties of this bean.  May return null if the
+     * information should be obtained by automatic analysis.
+     */
+    public BeanDescriptor getBeanDescriptor() {
+	return getBdescriptor();
+    }
+
+    /**
+     * Gets the bean's <code>PropertyDescriptor</code>s.
+     *
+     * @return An array of PropertyDescriptors describing the editable
+     * properties supported by this bean.  May return null if the
+     * information should be obtained by automatic analysis.
+     * <p>
+     * If a property is indexed, then its entry in the result array will
+     * belong to the IndexedPropertyDescriptor subclass of PropertyDescriptor.
+     * A client of getPropertyDescriptors can use "instanceof" to check
+     * if a given PropertyDescriptor is an IndexedPropertyDescriptor.
+     */
+    public PropertyDescriptor[] getPropertyDescriptors() {
+	return getPdescriptor();
+    }
+
+    /**
+     * Gets the bean's <code>EventSetDescriptor</code>s.
+     *
+     * @return  An array of EventSetDescriptors describing the kinds of
+     * events fired by this bean.  May return null if the information
+     * should be obtained by automatic analysis.
+     */
+    public EventSetDescriptor[] getEventSetDescriptors() {
+	return getEdescriptor();
+    }
+
+    /**
+     * Gets the bean's <code>MethodDescriptor</code>s.
+     *
+     * @return  An array of MethodDescriptors describing the methods
+     * implemented by this bean.  May return null if the information
+     * should be obtained by automatic analysis.
+     */
+    public MethodDescriptor[] getMethodDescriptors() {
+	return getMdescriptor();
+    }
+
+    /**
+     * A bean may have a "default" property that is the property that will
+     * mostly commonly be initially chosen for update by human's who are
+     * customizing the bean.
+     * @return  Index of default property in the PropertyDescriptor array
+     * 		returned by getPropertyDescriptors.
+     * <P>	Returns -1 if there is no default property.
+     */
+    public int getDefaultPropertyIndex() {
+        return defaultPropertyIndex;
+    }
+
+    /**
+     * A bean may have a "default" event that is the event that will
+     * mostly commonly be used by human's when using the bean.
+     * @return Index of default event in the EventSetDescriptor array
+     *		returned by getEventSetDescriptors.
+     * <P>	Returns -1 if there is no default event.
+     */
+    public int getDefaultEventIndex() {
+        return defaultEventIndex;
+    }
+
+    /**
+     * This method returns an image object that can be used to
+     * represent the bean in toolboxes, toolbars, etc.   Icon images
+     * will typically be GIFs, but may in future include other formats.
+     * <p>
+     * Beans aren't required to provide icons and may return null from
+     * this method.
+     * <p>
+     * There are four possible flavors of icons (16x16 color,
+     * 32x32 color, 16x16 mono, 32x32 mono).  If a bean choses to only
+     * support a single icon we recommend supporting 16x16 color.
+     * <p>
+     * We recommend that icons have a "transparent" background
+     * so they can be rendered onto an existing background.
+     *
+     * @param  iconKind  The kind of icon requested.  This should be
+     *    one of the constant values ICON_COLOR_16x16, ICON_COLOR_32x32,
+     *    ICON_MONO_16x16, or ICON_MONO_32x32.
+     * @return  An image object representing the requested icon.  May
+     *    return null if no suitable icon is available.
+     */
+    public java.awt.Image getIcon(int iconKind) {
+        java.awt.Image rv=null;
+        switch ( iconKind )
+        {
+            case ICON_COLOR_16x16:
+            {
+#if(${beanDescriptorImageColor16})
+                try
+                {
+                    if( iconColor16 == null )
+                        iconColor16 = ${beanDescriptorImageColor16};
+                    rv=iconColor16;
+                }
+                catch(java.lang.Throwable e)
+                {
+#if(${beanDescriptorExceptionHandling})
+	        ${beanDescriptorExceptionHandling}
+#else
+            e.printStackTrace();
+#end
+                }
+#end
+                break;
+            }
+            case ICON_COLOR_32x32:
+            {
+#if(${beanDescriptorImageColor32})
+                try
+                {
+                    if( iconColor32 == null )
+                        iconColor32 = ${beanDescriptorImageColor32};
+                    rv=iconColor32;
+                }
+                catch(java.lang.Throwable e)
+                {
+#if(${beanDescriptorExceptionHandling})
+	        ${beanDescriptorExceptionHandling}
+#else
+            e.printStackTrace();
+#end
+                }
+#end
+                break;
+            }
+            case ICON_MONO_16x16:
+            {
+#if(${beanDescriptorImageMono16})
+                try
+                {
+                    if( iconMono16 == null )
+                        iconMono16 = ${beanDescriptorImageMono16};
+                    rv=iconMono16;
+                }
+                catch(java.lang.Throwable e)
+                {
+#if(${beanDescriptorExceptionHandling})
+	        ${beanDescriptorExceptionHandling}
+#else
+            e.printStackTrace();
+#end
+                }
+#end
+                break;
+            }
+            case ICON_MONO_32x32:
+            {
+#if(${beanDescriptorImageMono32})
+                try
+                {
+                    if( iconMono32 == null )
+                        iconMono32 = ${beanDescriptorImageMono32};
+                    rv=iconMono32;
+                }
+                catch(java.lang.Throwable e)
+                {
+#if(${beanDescriptorExceptionHandling})
+	        ${beanDescriptorExceptionHandling}
+#else
+            e.printStackTrace();
+#end
+                }
+#end
+                break;
+            }
+            default:
+            {
+                rv=null;
+            }
+        }
+        return rv;
+    }
+}

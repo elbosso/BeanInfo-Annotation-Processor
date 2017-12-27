@@ -30,6 +30,7 @@ public class BeanInfoProcessor
 {
 	private boolean quiet;
 	private Map<String, VariableElement> fields ;
+	private Map<String, Map<String, String>> indexedProperties ;
 	private Map<String, Map<String, String>> properties ;
 	private Map<String, java.util.Map<java.lang.String, java.lang.Object> > methods ;
 	private Map<String, Map<String, String>> events ;
@@ -54,6 +55,7 @@ public class BeanInfoProcessor
 		String className = null;
 		String packageName = null;
 		fields = new HashMap<String, VariableElement>();
+		indexedProperties = new HashMap();
 		properties = new HashMap();
 		methods = new HashMap();
 		events = new HashMap();
@@ -138,6 +140,14 @@ public class BeanInfoProcessor
 								"Property: " + ann.toString());
 						handleProperty(fqClassName, exeElement);
 					}
+					ann = element.getAnnotation(IndexedProperty.class);
+					if (ann != null)
+					{
+						processingEnv.getMessager().printMessage(
+								Diagnostic.Kind.NOTE,
+								"IndexedProperty: " + ann.toString());
+						handleIndexedProperty(fqClassName, exeElement);
+					}
 					ann = element.getAnnotation(Event.class);
 					if (ann != null)
 					{
@@ -184,6 +194,7 @@ public class BeanInfoProcessor
 					vc.put("className", className);
 					vc.put("packageName", packageName);
 					vc.put("methods", methods);
+					vc.put("indexedProperties", indexedProperties);
 					vc.put("properties", properties);
 					vc.put("eventSets", events);
 					vc.put("generatorname", this.getClass().getName());
@@ -307,6 +318,122 @@ public class BeanInfoProcessor
 			}
 			if (readMethod != null)
 				holder.put("readMethod", readMethod);
+			if (writeMethod != null)
+				holder.put("writeMethod", writeMethod);
+			Property propertyInfo = exeElement.getAnnotation(Property.class);
+			if(propertyInfo != null)
+			{
+				manageAttribute(exeElement, Property.class,holder,"Description","description",propertyInfo.description());
+				manageAttribute(exeElement, Property.class,holder,"DisplayName","displayName",propertyInfo.displayName());
+				manageAttribute(exeElement, Property.class,holder,"Hidden","hidden",propertyInfo.hidden());
+				manageAttribute(exeElement, Property.class,holder,"Expert","expert",propertyInfo.expert());
+				manageAttribute(exeElement, Property.class,holder,"Preferred","preferred",propertyInfo.preferred());
+				manageAttribute(exeElement, Property.class,holder,"Bound","bound",propertyInfo.bound());
+				manageAttribute(exeElement, Property.class,holder,"Constrained","constrained",propertyInfo.constrained());
+				List<? extends TypeMirror> l = null;
+				try
+				{
+					propertyInfo.propertyEditorClass();
+				} catch (MirroredTypesException mte)
+				{
+					l = mte.getTypeMirrors();
+				}
+				List<de.netsysit.util.lang.Tupel<java.lang.String, java.lang.String>> ll = new java.util.LinkedList();
+				for (TypeMirror tm : l)
+				{
+					java.lang.String a = tm.toString();
+					a = a.substring(a.lastIndexOf('.') + 1);
+					a = a.replace("[]", "Array");
+					ll.add(new de.netsysit.util.lang.Tupel(a, tm.toString()));
+				}
+				if((ll.size()>0)&&(ll.get(0).getRighty().equals("java.lang.Void")==false))
+				{
+					manageAttribute(exeElement, Property.class,holder,"PropertyEditorClass","propertyEditorClass",ll.get(0).getRighty());
+				}
+				KeyValueStore[] keyValueStores=propertyInfo.keyValueStore();
+				if(keyValueStores!=null)
+				{
+					java.util.Map<java.lang.String, java.lang.String> valueMap=null;
+					if(holder.containsKey("ValueMap"))
+						valueMap=(java.util.Map<java.lang.String, java.lang.String>)holder.get("ValueMap");
+					else
+					{
+						valueMap = new java.util.HashMap();
+						holder.put("ValueMap", valueMap);
+					}
+					for (KeyValueStore keyValueStore : keyValueStores)
+					{
+						if (valueMap.containsKey(keyValueStore.key()))
+							processingEnv.getMessager().printMessage(
+									Diagnostic.Kind.WARNING,
+									"key "+keyValueStore.key()+" set more than once with different values! (annotation Property on "+exeElement+" in "+exeElement.getEnclosingElement()+")");
+						valueMap.put(keyValueStore.key(),keyValueStore.value());
+					}
+				}
+			}
+		}
+	}
+	private void handleIndexedProperty(String fqClassName, ExecutableElement exeElement)
+	{
+		String sn = exeElement.getSimpleName().toString();
+		String pn = null;
+		String readMethod = null;
+		String indexedReadMethod = null;
+		String writeMethod = null;
+		String indexedWriteMethod = null;
+		String type = null;
+		if (sn.startsWith("set"))
+		{
+			if(exeElement.getParameters().size()==2)
+			{
+				indexedWriteMethod = sn;
+				type = exeElement.getParameters().get(1).asType().toString();
+			}
+			else
+			{
+				writeMethod = sn;
+
+				type = processingEnv.getTypeUtils().getArrayType(exeElement.getParameters().get(0).asType()).toString();
+			}
+			pn = sn.substring(3);
+		}
+		else
+		{
+			if(exeElement.getParameters().size()==2)
+			{
+				indexedReadMethod = sn;
+				type = exeElement.getReturnType().toString();
+			}
+			else
+			{
+				readMethod = sn;
+				type = processingEnv.getTypeUtils().getArrayType(exeElement.getReturnType()).toString();
+			}
+			if (sn.startsWith("get"))
+				pn = sn.substring(3);
+			if (sn.startsWith("is"))
+				pn = sn.substring(2);
+		}
+		if ((pn != null) && (((readMethod != null) || (writeMethod != null))||((indexedReadMethod != null)||(indexedWriteMethod != null))))
+		{
+			pn = pn.substring(0, 1).toLowerCase() + pn.substring(1);
+			if (!quiet)
+				processingEnv.getMessager().printMessage(
+						Diagnostic.Kind.NOTE,
+						"annotated indexed property: " + pn, exeElement);
+			java.util.Map holder = indexedProperties.get(pn);
+			if (holder == null)
+			{
+				holder = new java.util.HashMap();
+				holder.put("type", type);
+				indexedProperties.put(pn, holder);
+			}
+			if (indexedReadMethod != null)
+				holder.put("indexedReadMethod", indexedReadMethod);
+			if (readMethod != null)
+				holder.put("readMethod", readMethod);
+			if (indexedWriteMethod != null)
+				holder.put("indexedWriteMethod", indexedWriteMethod);
 			if (writeMethod != null)
 				holder.put("writeMethod", writeMethod);
 			Property propertyInfo = exeElement.getAnnotation(Property.class);

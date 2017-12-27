@@ -38,6 +38,7 @@ import java.beans.BeanDescriptor;
 import java.beans.MethodDescriptor;
 import java.beans.ParameterDescriptor;
 import java.beans.EventSetDescriptor;
+import java.beans.IndexedPropertyDescriptor;
 import java.beans.PropertyDescriptor;
 import java.beans.IntrospectionException;
 import java.lang.reflect.Method;
@@ -123,6 +124,41 @@ public class ${className}BeanInfo
 #end
 #if(${properties.get(${property}).get("PropertyEditorClass")})
             properties.get("${property}").setPropertyEditorClass(${properties.get(${property}).get("PropertyEditorClass")}.class);
+#end
+#end
+
+#foreach($indexedProperty in ${indexedProperties.keySet()})
+            properties.put("${indexedProperty}",new IndexedPropertyDescriptor ( "${indexedProperty}", #if (${indexedProperties.get(${indexedProperty}).get("declaringClass")}) ${indexedProperties.get(${indexedProperty}).get("declaringClass")}.class #else ${packageName}.${className}.class #end, #if (${indexedProperties.get(${indexedProperty}).get("readMethod")}) "${indexedProperties.get(${indexedProperty}).get("readMethod")}" #else null #end, #if (${indexedProperties.get(${indexedProperty}).get("writeMethod")})"${indexedProperties.get(${indexedProperty}).get("writeMethod")}" #else null #end , #if (${indexedProperties.get(${indexedProperty}).get("indexedReadMethod")}) "${indexedProperties.get(${indexedProperty}).get("indexedReadMethod")}" #else null #end, #if (${indexedProperties.get(${indexedProperty}).get("indexedWriteMethod")})"${indexedProperties.get(${indexedProperty}).get("indexedWriteMethod")}" #else null #end));
+#if(${indexedProperties.get(${indexedProperty}).get("Hidden")})
+            properties.get("${indexedProperty}").setHidden(${indexedProperties.get(${indexedProperty}).get("Hidden")});
+#end
+#if(${indexedProperties.get(${indexedProperty}).get("Expert")})
+            properties.get("${indexedProperty}").setExpert(${indexedProperties.get(${indexedProperty}).get("Expert")});
+#end
+#if(${indexedProperties.get(${indexedProperty}).get("Preferred")})
+            properties.get("${indexedProperty}").setPreferred(${indexedProperties.get(${indexedProperty}).get("Preferred")});
+#end
+#if(${indexedProperties.get(${indexedProperty}).get("Description")})
+            properties.get("${indexedProperty}").setShortDescription(${indexedProperties.get(${indexedProperty}).get("Description")});
+#else
+            properties.get("${indexedProperty}").setShortDescription(null);
+#end
+#if(${indexedProperties.get(${indexedProperty}).get("DisplayName")})
+            properties.get("${indexedProperty}").setShortDescription(${indexedProperties.get(${indexedProperty}).get("DisplayName")});
+#else
+            properties.get("${indexedProperty}").setDisplayName(null);
+#end
+#foreach ( $key in ${indexedProperties.get(${indexedProperty}).get("ValueMap").keySet()} )
+            properties.get("${indexedProperty}").setValue($key,${indexedProperties.get(${indexedProperty}).get("ValueMap").get($key)});
+#end
+#if(${indexedProperties.get(${indexedProperty}).get("Bound")})
+            properties.get("${indexedProperty}").setBound(${indexedProperties.get(${indexedProperty}).get("Bound")});
+#end
+#if(${indexedProperties.get(${indexedProperty}).get("Constrained")})
+            properties.get("${indexedProperty}").setConstrained(${indexedProperties.get(${indexedProperty}).get("Constrained")});
+#end
+#if(${indexedProperties.get(${indexedProperty}).get("PropertyEditorClass")})
+            properties.get("${indexedProperty}").setPropertyEditorClass(${indexedProperties.get(${indexedProperty}).get("PropertyEditorClass")}.class);
 #end
 #end
 

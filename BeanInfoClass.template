@@ -109,7 +109,7 @@ public class ${className}BeanInfo
             properties.get("${property}").setShortDescription(null);
 #end
 #if(${properties.get(${property}).get("DisplayName")})
-            properties.get("${property}").setShortDescription(${properties.get(${property}).get("DisplayName")});
+            properties.get("${property}").setDisplayName(${properties.get(${property}).get("DisplayName")});
 #else
             properties.get("${property}").setDisplayName(null);
 #end
@@ -446,3 +446,4 @@ public class ${className}BeanInfo
         return rv;
     }
 }
+

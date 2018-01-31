@@ -63,10 +63,13 @@ public class BeanInfoProcessor
 
 		for (Element e : roundEnv.getElementsAnnotatedWith(BeanInfo.class))
 		{
-
+			fields.clear();
+			indexedProperties.clear();
+			properties.clear();
+			methods.clear();
+			events.clear();
 			if (e.getKind() == ElementKind.CLASS)
 			{
-
 				TypeElement classElement = (TypeElement) e;
 //				workOnSuperClass(classElement);
 				PackageElement packageElement = (PackageElement) classElement.getEnclosingElement();
@@ -602,3 +605,4 @@ public class BeanInfoProcessor
 		}
 	}
 */}
+

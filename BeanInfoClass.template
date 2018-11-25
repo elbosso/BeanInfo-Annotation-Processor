@@ -52,8 +52,16 @@ import java.lang.reflect.Method;
 @javax.annotation.Generated(value="${generatorname}", date="$current_time")
 public class ${className}BeanInfo
     extends java.beans.SimpleBeanInfo {
-#if(${beanDescriptorI18nBundle})
-	private final static java.util.ResourceBundle i18n=java.util.ResourceBundle.getBundle(${beanDescriptorI18nBundle},java.util.Locale.getDefault());
+#if(${beanDescriptorAlternativeI18nBundles})
+	private static java.util.ResourceBundle i18n=null;
+	static
+	{
+	    java.util.List<java.util.ResourceBundle> bundles=new java.util.LinkedList();
+#foreach ( $bundleName in ${beanDescriptorAlternativeI18nBundles} )
+        bundles.add(java.util.ResourceBundle.getBundle(${bundleName},java.util.Locale.getDefault()));
+#end
+	    i18n=new de.elbosso.util.ResourceBundleCombiner(bundles);
+	}
 #end
     /*lazy BeanDescriptor*/
     private static BeanDescriptor getBdescriptor(){
@@ -182,8 +190,12 @@ public class ${className}BeanInfo
         try {
 #foreach($event in ${eventSets.keySet()})
             eventSets.put("${eventSets.get(${event}).get("listener")}",new EventSetDescriptor ( #if (${eventSets.get(${event}).get("declaringClass")}) ${eventSets.get(${event}).get("declaringClass")}.class #else ${packageName}.${className}.class #end, "${eventSets.get(${event}).get("listener")}", ${eventSets.get(${event}).get("type")}.class, new String[] {"${event}"}, #if (${eventSets.get(${event}).get("addMethod")})"${eventSets.get(${event}).get("addMethod")}" #else null #end, #if (${eventSets.get(${event}).get("removeMethod")})"${eventSets.get(${event}).get("removeMethod")}" #else null #end ));
+#if(${eventSets.get(${event}).get("InDefaultEventSet")})
             eventSets.get("${eventSets.get(${event}).get("listener")}").setInDefaultEventSet(${eventSets.get(${event}).get("InDefaultEventSet")});
+#end
+#if(${eventSets.get(${event}).get("Unicast")})
             eventSets.get("${eventSets.get(${event}).get("listener")}").setUnicast(${eventSets.get(${event}).get("Unicast")});
+#end
 #end
         }
         catch(Exception e) {
@@ -446,4 +458,3 @@ public class ${className}BeanInfo
         return rv;
     }
 }
-

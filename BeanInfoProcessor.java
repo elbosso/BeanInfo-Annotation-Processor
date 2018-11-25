@@ -61,7 +61,7 @@ public class BeanInfoProcessor
 		events = new HashMap();
 		java.util.Map<java.lang.String, java.lang.Object> contextContent=new java.util.HashMap();
 
-		for (Element e : roundEnv.getElementsAnnotatedWith(BeanInfo.class))
+		for (Element e : roundEnv.getElementsAnnotatedWith(de.elbosso.util.lang.annotations.BeanInfo.class))
 		{
 			fields.clear();
 			indexedProperties.clear();
@@ -71,18 +71,18 @@ public class BeanInfoProcessor
 			if (e.getKind() == ElementKind.CLASS)
 			{
 				TypeElement classElement = (TypeElement) e;
-//				workOnSuperClass(classElement);
+				java.util.List<java.lang.String> i18nBundles=workOnSuperClass(classElement);
 				PackageElement packageElement = (PackageElement) classElement.getEnclosingElement();
 
 //				if (!quiet)
-					processingEnv.getMessager().printMessage(
-							Diagnostic.Kind.NOTE,
-							"annotated class: " + classElement.getQualifiedName(), e);
+				processingEnv.getMessager().printMessage(
+						Diagnostic.Kind.NOTE,
+						"annotated class: " + classElement.getQualifiedName(), e);
 
 				fqClassName = classElement.getQualifiedName().toString();
 				className = classElement.getSimpleName().toString();
 				packageName = packageElement.getQualifiedName().toString();
-				BeanInfo beanInfo = e.getAnnotation(BeanInfo.class);
+				de.elbosso.util.lang.annotations.BeanInfo beanInfo = e.getAnnotation(de.elbosso.util.lang.annotations.BeanInfo.class);
 				if(beanInfo != null)
 				{
 					if(beanInfo.description().equals("--")==false)
@@ -92,7 +92,7 @@ public class BeanInfoProcessor
 //					if(beanInfo.moduleWidgetDefaultLayerTitle().equals("--")==false)
 //						contextContent.put("beanDescriptorModuleWidgetDefaultLayerTitle", beanInfo.moduleWidgetDefaultLayerTitle());
 					if(beanInfo.i18nBundle().equals("--")==false)
-						contextContent.put("beanDescriptorI18nBundle", beanInfo.i18nBundle());
+						i18nBundles.add(beanInfo.i18nBundle());
 					if(beanInfo.imageColor16().equals("--")==false)
 						contextContent.put("beanDescriptorImageColor16", beanInfo.imageColor16());
 					if(beanInfo.imageColor32().equals("--")==false)
@@ -106,12 +106,13 @@ public class BeanInfoProcessor
 					contextContent.put("beanDescriptorPreferred",beanInfo.preferred());
 					contextContent.put("beanDescriptorDefaultEventIndex",beanInfo.defaultEventIndex());
 					contextContent.put("beanDescriptorDefaultPropertyIndex",beanInfo.defaultPropertyIndex());
+					contextContent.put("beanDescriptorAlternativeI18nBundles",i18nBundles);
 //					contextContent.put("beanDescriptor",beanInfo);
-					KeyValueStore[] keyValueStores=beanInfo.keyValueStore();
+					de.elbosso.util.lang.annotations.KeyValueStore[] keyValueStores=beanInfo.keyValueStore();
 					if(keyValueStores!=null)
 					{
 						java.util.Map<java.lang.String, java.lang.String> valueMap=new java.util.HashMap();
-						for (KeyValueStore keyValueStore : keyValueStores)
+						for (de.elbosso.util.lang.annotations.KeyValueStore keyValueStore : keyValueStores)
 						{
 							valueMap.put(keyValueStore.key(),keyValueStore.value());
 						}
@@ -127,7 +128,7 @@ public class BeanInfoProcessor
 
 				{
 					ExecutableElement exeElement = (ExecutableElement) element;
-					Annotation ann = element.getAnnotation(Method.class);
+					Annotation ann = element.getAnnotation(de.elbosso.util.lang.annotations.Method.class);
 					if (ann != null)
 					{
 						processingEnv.getMessager().printMessage(
@@ -135,7 +136,7 @@ public class BeanInfoProcessor
 								"Method: " + ann.toString());
 						handleMethod(fqClassName, exeElement);
 					}
-					ann = element.getAnnotation(Property.class);
+					ann = element.getAnnotation(de.elbosso.util.lang.annotations.Property.class);
 					if (ann != null)
 					{
 						processingEnv.getMessager().printMessage(
@@ -143,7 +144,7 @@ public class BeanInfoProcessor
 								"Property: " + ann.toString());
 						handleProperty(fqClassName, exeElement);
 					}
-					ann = element.getAnnotation(IndexedProperty.class);
+					ann = element.getAnnotation(de.elbosso.util.lang.annotations.IndexedProperty.class);
 					if (ann != null)
 					{
 						processingEnv.getMessager().printMessage(
@@ -151,7 +152,7 @@ public class BeanInfoProcessor
 								"IndexedProperty: " + ann.toString());
 						handleIndexedProperty(fqClassName, exeElement);
 					}
-					ann = element.getAnnotation(Event.class);
+					ann = element.getAnnotation(de.elbosso.util.lang.annotations.Event.class);
 					if (ann != null)
 					{
 						processingEnv.getMessager().printMessage(
@@ -161,11 +162,11 @@ public class BeanInfoProcessor
 					}
 				}
 			}
-		if (fqClassName != null)
-		{
-			try
+			if (fqClassName != null)
 			{
-				TypeElement typeElement = processingEnv.getElementUtils().getTypeElement(fqClassName + "BeanInfo");
+				try
+				{
+					TypeElement typeElement = processingEnv.getElementUtils().getTypeElement(fqClassName + "BeanInfo");
 /*				if (typeElement != null)
 				{
 					FileObject in_file = processingEnv.getFiler().getResource(
@@ -184,55 +185,55 @@ public class BeanInfoProcessor
 							""+f.exists());
 				}
 */
-				{
-					java.util.Properties props = new java.util.Properties();
-					java.net.URL url = this.getClass().getClassLoader().getResource("de/elbosso/util/data/Processor.properties");
-					props.load(url.openStream());
-
-					org.apache.velocity.app.VelocityEngine ve = new org.apache.velocity.app.VelocityEngine(props);
-					ve.setProperty(VelocityEngine.RUNTIME_LOG_INSTANCE, NOPLogger.NOP_LOGGER);
-					ve.init();
-
-					org.apache.velocity.VelocityContext vc = new org.apache.velocity.VelocityContext();
-					vc.put("className", className);
-					vc.put("packageName", packageName);
-					vc.put("methods", methods);
-					vc.put("indexedProperties", indexedProperties);
-					vc.put("properties", properties);
-					vc.put("eventSets", events);
-					vc.put("generatorname", this.getClass().getName());
-					for (java.lang.String key : contextContent.keySet())
 					{
-						vc.put(key, contextContent.get(key));
+						java.util.Properties props = new java.util.Properties();
+						java.net.URL url = this.getClass().getClassLoader().getResource("de/elbosso/util/data/Processor.properties");
+						props.load(url.openStream());
+
+						org.apache.velocity.app.VelocityEngine ve = new org.apache.velocity.app.VelocityEngine(props);
+						ve.setProperty(VelocityEngine.RUNTIME_LOG_INSTANCE, NOPLogger.NOP_LOGGER);
+						ve.init();
+
+						org.apache.velocity.VelocityContext vc = new org.apache.velocity.VelocityContext();
+						vc.put("className", className);
+						vc.put("packageName", packageName);
+						vc.put("methods", methods);
+						vc.put("indexedProperties", indexedProperties);
+						vc.put("properties", properties);
+						vc.put("eventSets", events);
+						vc.put("generatorname", this.getClass().getName());
+						for (java.lang.String key : contextContent.keySet())
+						{
+							vc.put(key, contextContent.get(key));
+						}
+
+						org.apache.velocity.Template vt = ve.getTemplate("de/elbosso/util/data/BeanInfoClass.template");
+						if (!quiet)
+							processingEnv.getMessager().printMessage(
+									Diagnostic.Kind.NOTE,
+									"applying velocity template: " + vt.getName());
+
+						JavaFileObject jfo = processingEnv.getFiler().createSourceFile(
+								fqClassName + "BeanInfo");
+
+
+						if (!quiet)
+							processingEnv.getMessager().printMessage(
+									Diagnostic.Kind.NOTE,
+									"creating source file: " + jfo.toUri());
+
+						java.io.Writer writer = jfo.openWriter();
+
+
+						vt.merge(vc, writer);
+
+						writer.close();
 					}
-
-					org.apache.velocity.Template vt = ve.getTemplate("de/elbosso/util/data/BeanInfoClass.template");
-					if (!quiet)
-						processingEnv.getMessager().printMessage(
-								Diagnostic.Kind.NOTE,
-								"applying velocity template: " + vt.getName());
-
-					JavaFileObject jfo = processingEnv.getFiler().createSourceFile(
-							fqClassName + "BeanInfo");
-
-
-					if (!quiet)
-						processingEnv.getMessager().printMessage(
-								Diagnostic.Kind.NOTE,
-								"creating source file: " + jfo.toUri());
-
-					java.io.Writer writer = jfo.openWriter();
-
-
-					vt.merge(vc, writer);
-
-					writer.close();
+				} catch (java.lang.Throwable t)
+				{
+					t.printStackTrace();
 				}
-			} catch (java.lang.Throwable t)
-			{
-				t.printStackTrace();
 			}
-		}
 		}
 		return true; // no further processing of this annotation type
 	}
@@ -250,7 +251,7 @@ public class BeanInfoProcessor
 		thingummys.put("fqClassName", fqClassName);
 
 		methods.put(sn,thingummys);
-		Method methodInfo = exeElement.getAnnotation(Method.class);
+		de.elbosso.util.lang.annotations.Method methodInfo = exeElement.getAnnotation(de.elbosso.util.lang.annotations.Method.class);
 		if(methodInfo != null)
 		{
 			java.util.Map<java.lang.String, java.lang.Object> contextContent=new java.util.HashMap();
@@ -265,11 +266,11 @@ public class BeanInfoProcessor
 			contextContent.put("Expert",methodInfo.expert());
 			contextContent.put("Preferred",methodInfo.preferred());
 //					contextContent.put("beanDescriptor",methodInfo);
-			KeyValueStore[] keyValueStores=methodInfo.keyValueStore();
+			de.elbosso.util.lang.annotations.KeyValueStore[] keyValueStores=methodInfo.keyValueStore();
 			if(keyValueStores!=null)
 			{
 				java.util.Map<java.lang.String, java.lang.String> valueMap=new java.util.HashMap();
-				for (KeyValueStore keyValueStore : keyValueStores)
+				for (de.elbosso.util.lang.annotations.KeyValueStore keyValueStore : keyValueStores)
 				{
 					if (valueMap.containsKey(keyValueStore.key()))
 						processingEnv.getMessager().printMessage(
@@ -323,16 +324,17 @@ public class BeanInfoProcessor
 				holder.put("readMethod", readMethod);
 			if (writeMethod != null)
 				holder.put("writeMethod", writeMethod);
-			Property propertyInfo = exeElement.getAnnotation(Property.class);
+			holder.put("declaringClass",fqClassName);
+			de.elbosso.util.lang.annotations.Property propertyInfo = exeElement.getAnnotation(de.elbosso.util.lang.annotations.Property.class);
 			if(propertyInfo != null)
 			{
-				manageAttribute(exeElement, Property.class,holder,"Description","description",propertyInfo.description());
-				manageAttribute(exeElement, Property.class,holder,"DisplayName","displayName",propertyInfo.displayName());
-				manageAttribute(exeElement, Property.class,holder,"Hidden","hidden",propertyInfo.hidden());
-				manageAttribute(exeElement, Property.class,holder,"Expert","expert",propertyInfo.expert());
-				manageAttribute(exeElement, Property.class,holder,"Preferred","preferred",propertyInfo.preferred());
-				manageAttribute(exeElement, Property.class,holder,"Bound","bound",propertyInfo.bound());
-				manageAttribute(exeElement, Property.class,holder,"Constrained","constrained",propertyInfo.constrained());
+				manageAttribute(exeElement, de.elbosso.util.lang.annotations.Property.class,holder,"Description","description",propertyInfo.description());
+				manageAttribute(exeElement, de.elbosso.util.lang.annotations.Property.class,holder,"DisplayName","displayName",propertyInfo.displayName());
+				manageAttribute(exeElement, de.elbosso.util.lang.annotations.Property.class,holder,"Hidden","hidden",propertyInfo.hidden());
+				manageAttribute(exeElement, de.elbosso.util.lang.annotations.Property.class,holder,"Expert","expert",propertyInfo.expert());
+				manageAttribute(exeElement, de.elbosso.util.lang.annotations.Property.class,holder,"Preferred","preferred",propertyInfo.preferred());
+				manageAttribute(exeElement, de.elbosso.util.lang.annotations.Property.class,holder,"Bound","bound",propertyInfo.bound());
+				manageAttribute(exeElement, de.elbosso.util.lang.annotations.Property.class,holder,"Constrained","constrained",propertyInfo.constrained());
 				List<? extends TypeMirror> l = null;
 				try
 				{
@@ -351,9 +353,9 @@ public class BeanInfoProcessor
 				}
 				if((ll.size()>0)&&(ll.get(0).getRighty().equals("java.lang.Void")==false))
 				{
-					manageAttribute(exeElement, Property.class,holder,"PropertyEditorClass","propertyEditorClass",ll.get(0).getRighty());
+					manageAttribute(exeElement, de.elbosso.util.lang.annotations.Property.class,holder,"PropertyEditorClass","propertyEditorClass",ll.get(0).getRighty());
 				}
-				KeyValueStore[] keyValueStores=propertyInfo.keyValueStore();
+				de.elbosso.util.lang.annotations.KeyValueStore[] keyValueStores=propertyInfo.keyValueStore();
 				if(keyValueStores!=null)
 				{
 					java.util.Map<java.lang.String, java.lang.String> valueMap=null;
@@ -364,7 +366,7 @@ public class BeanInfoProcessor
 						valueMap = new java.util.HashMap();
 						holder.put("ValueMap", valueMap);
 					}
-					for (KeyValueStore keyValueStore : keyValueStores)
+					for (de.elbosso.util.lang.annotations.KeyValueStore keyValueStore : keyValueStores)
 					{
 						if (valueMap.containsKey(keyValueStore.key()))
 							processingEnv.getMessager().printMessage(
@@ -439,16 +441,17 @@ public class BeanInfoProcessor
 				holder.put("indexedWriteMethod", indexedWriteMethod);
 			if (writeMethod != null)
 				holder.put("writeMethod", writeMethod);
-			Property propertyInfo = exeElement.getAnnotation(Property.class);
+			holder.put("declaringClass",fqClassName);
+			de.elbosso.util.lang.annotations.Property propertyInfo = exeElement.getAnnotation(de.elbosso.util.lang.annotations.Property.class);
 			if(propertyInfo != null)
 			{
-				manageAttribute(exeElement, Property.class,holder,"Description","description",propertyInfo.description());
-				manageAttribute(exeElement, Property.class,holder,"DisplayName","displayName",propertyInfo.displayName());
-				manageAttribute(exeElement, Property.class,holder,"Hidden","hidden",propertyInfo.hidden());
-				manageAttribute(exeElement, Property.class,holder,"Expert","expert",propertyInfo.expert());
-				manageAttribute(exeElement, Property.class,holder,"Preferred","preferred",propertyInfo.preferred());
-				manageAttribute(exeElement, Property.class,holder,"Bound","bound",propertyInfo.bound());
-				manageAttribute(exeElement, Property.class,holder,"Constrained","constrained",propertyInfo.constrained());
+				manageAttribute(exeElement, de.elbosso.util.lang.annotations.Property.class,holder,"Description","description",propertyInfo.description());
+				manageAttribute(exeElement, de.elbosso.util.lang.annotations.Property.class,holder,"DisplayName","displayName",propertyInfo.displayName());
+				manageAttribute(exeElement, de.elbosso.util.lang.annotations.Property.class,holder,"Hidden","hidden",propertyInfo.hidden());
+				manageAttribute(exeElement, de.elbosso.util.lang.annotations.Property.class,holder,"Expert","expert",propertyInfo.expert());
+				manageAttribute(exeElement, de.elbosso.util.lang.annotations.Property.class,holder,"Preferred","preferred",propertyInfo.preferred());
+				manageAttribute(exeElement, de.elbosso.util.lang.annotations.Property.class,holder,"Bound","bound",propertyInfo.bound());
+				manageAttribute(exeElement, de.elbosso.util.lang.annotations.Property.class,holder,"Constrained","constrained",propertyInfo.constrained());
 				List<? extends TypeMirror> l = null;
 				try
 				{
@@ -467,9 +470,9 @@ public class BeanInfoProcessor
 				}
 				if((ll.size()>0)&&(ll.get(0).getRighty().equals("java.lang.Void")==false))
 				{
-					manageAttribute(exeElement, Property.class,holder,"PropertyEditorClass","propertyEditorClass",ll.get(0).getRighty());
+					manageAttribute(exeElement, de.elbosso.util.lang.annotations.Property.class,holder,"PropertyEditorClass","propertyEditorClass",ll.get(0).getRighty());
 				}
-				KeyValueStore[] keyValueStores=propertyInfo.keyValueStore();
+				de.elbosso.util.lang.annotations.KeyValueStore[] keyValueStores=propertyInfo.keyValueStore();
 				if(keyValueStores!=null)
 				{
 					java.util.Map<java.lang.String, java.lang.String> valueMap=null;
@@ -480,7 +483,7 @@ public class BeanInfoProcessor
 						valueMap = new java.util.HashMap();
 						holder.put("ValueMap", valueMap);
 					}
-					for (KeyValueStore keyValueStore : keyValueStores)
+					for (de.elbosso.util.lang.annotations.KeyValueStore keyValueStore : keyValueStores)
 					{
 						if (valueMap.containsKey(keyValueStore.key()))
 							processingEnv.getMessager().printMessage(
@@ -505,8 +508,8 @@ public class BeanInfoProcessor
 				{
 					if (holder.get(key).equals(attributeValue) == false)
 						processingEnv.getMessager().printMessage(
-						Diagnostic.Kind.ERROR,
-						"property attribute "+methodName+" set more than once with different values ("+attributeValue+" / "+holder.get(key)+") (annotation "+clazz.getSimpleName()+" on "+exeElement+" in "+exeElement.getEnclosingElement()+")");
+								Diagnostic.Kind.ERROR,
+								"property attribute "+methodName+" set more than once with different values ("+attributeValue+" / "+holder.get(key)+") (annotation "+clazz.getSimpleName()+" on "+exeElement+" in "+exeElement.getEnclosingElement()+")");
 				}
 			}
 			catch(java.lang.NoSuchMethodException exp)
@@ -555,14 +558,20 @@ public class BeanInfoProcessor
 				events.put(en, holder);
 			}
 			if (addMethod != null)
+			{
 				holder.put("addMethod", addMethod);
+				holder.put("declaringClass",fqClassName);
+			}
 			if (removeMethod != null)
+			{
 				holder.put("removeMethod", removeMethod);
-			Event eventInfo = exeElement.getAnnotation(Event.class);
+				holder.put("declaringClass",fqClassName);
+			}
+			de.elbosso.util.lang.annotations.Event eventInfo = exeElement.getAnnotation(de.elbosso.util.lang.annotations.Event.class);
 			if(eventInfo != null)
 			{
-				manageAttribute(exeElement, Event.class,holder,"InDefaultEventSet","inDefaultEventSet",eventInfo.inDefaultEventSet());
-				manageAttribute(exeElement, Event.class,holder,"Unicast","unicast",eventInfo.unicast());
+				manageAttribute(exeElement, de.elbosso.util.lang.annotations.Event.class,holder,"InDefaultEventSet","inDefaultEventSet",eventInfo.inDefaultEventSet());
+				manageAttribute(exeElement, de.elbosso.util.lang.annotations.Event.class,holder,"Unicast","unicast",eventInfo.unicast());
 /*				if(holder.containsKey("InDefaultEventSet")==false)
 					holder.put("InDefaultEventSet", eventInfo.inDefaultEventSet());
 				if(holder.containsKey("Unicast")==false)
@@ -571,38 +580,67 @@ public class BeanInfoProcessor
 		}
 	}
 
-/*	private void workOnSuperClass(TypeElement classElement)
+	private java.util.List<java.lang.String> workOnSuperClass(TypeElement classElement)
 	{
+		java.util.List<java.lang.String> i18nBundles=new java.util.LinkedList();
+		processingEnv.getMessager().printMessage(
+				Diagnostic.Kind.NOTE,
+				"workOnSuperClass - class: " + classElement.getQualifiedName(), classElement);
 		TypeElement superClassElement =processingEnv.getElementUtils().getTypeElement(classElement.getSuperclass().toString());
 		if(superClassElement!=null)
 		{
+			processingEnv.getMessager().printMessage(
+					Diagnostic.Kind.NOTE,
+					"workOnSuperClass - super class: " + superClassElement.getQualifiedName(), superClassElement);
 			java.lang.String fqClassName = superClassElement.getQualifiedName().toString();
 			List<? extends Element> superClassElements = superClassElement.getEnclosedElements();
+			de.elbosso.util.lang.annotations.BeanInfo bi=superClassElement.getAnnotation(de.elbosso.util.lang.annotations.BeanInfo.class);
+			if(bi!=null)
+			{
+				if(bi.i18nBundle().equals("--")==false)
+				{
+					processingEnv.getMessager().printMessage(
+							Diagnostic.Kind.NOTE,
+							"found i18n bundle: " + bi.i18nBundle());
+					i18nBundles.add(bi.i18nBundle());
+				}
+			}
 			for(Element e:superClassElements)
 			{
+				processingEnv.getMessager().printMessage(
+						Diagnostic.Kind.NOTE,
+						"element: " + e.getSimpleName()+" "+(e.getKind() == ElementKind.METHOD)+" "+e.getAnnotationMirrors().toString());
 				if(e.getKind() == ElementKind.METHOD)
 				{
 					ExecutableElement exeElement = (ExecutableElement) e;
-					if(exeElement.getAnnotation(Event.class)!=null)
-					{
-						handleEvent(fqClassName,exeElement);
-					}
-					else if(exeElement.getAnnotation(Property.class)!=null)
-					{
-						handleProperty(fqClassName,exeElement);
-					}
-					else if(exeElement.getAnnotation(Method.class)!=null)
+					//processingEnv.getMessager().printMessage(
+					//Diagnostic.Kind.NOTE,exeElement.getAnnotationMirrors().toString());
+					if(exeElement.getAnnotation(de.elbosso.util.lang.annotations.Event.class)!=null)
 					{
 						processingEnv.getMessager().printMessage(
 								Diagnostic.Kind.NOTE,
-								fqClassName+" "+exeElement);
+								"found event");
+						handleEvent(fqClassName,exeElement);
+					}
+					else if(exeElement.getAnnotation(de.elbosso.util.lang.annotations.Property.class)!=null)
+					{
+						processingEnv.getMessager().printMessage(
+								Diagnostic.Kind.NOTE,
+								"found property");
+						handleProperty(fqClassName,exeElement);
+					}
+					else if(exeElement.getAnnotation(de.elbosso.util.lang.annotations.Method.class)!=null)
+					{
+						processingEnv.getMessager().printMessage(
+								Diagnostic.Kind.NOTE,
+								"found method "+fqClassName+" "+exeElement);
 
 						handleMethod(fqClassName,exeElement);
 					}
 				}
 			}
-			workOnSuperClass(superClassElement);
+			i18nBundles.addAll(workOnSuperClass(superClassElement));
 		}
+		return i18nBundles;
 	}
-*/}
-
+}
